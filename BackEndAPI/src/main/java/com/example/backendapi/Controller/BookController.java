@@ -8,11 +8,13 @@ import com.example.backendapi.Model.PartFileModel;
 import com.example.backendapi.Model.User;
 import com.example.backendapi.ModelMapping.BookMapping;
 import com.example.backendapi.ModelMapping.BookModel;
+import com.example.backendapi.ModelMapping.ExchangeBook;
 import com.example.backendapi.ModelMapping.PagingModel;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
@@ -55,5 +57,11 @@ public class BookController {
     @GetMapping("/{id}")
     public BookModel getBookByID(@PathVariable UUID id){
         return bookService.getBookByID(id);
+    }
+    @PostMapping("/exchange")
+    public ExchangeBook exchange(@RequestBody UUID id, Authentication auth){
+        String userName = auth.getName();
+
+        return bookService.exchangeBook(id,userName);
     }
 }

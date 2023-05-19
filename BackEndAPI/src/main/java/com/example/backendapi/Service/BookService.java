@@ -5,8 +5,10 @@ import com.example.backendapi.Abstractions.IFileStorageService;
 import com.example.backendapi.Model.Book;
 import com.example.backendapi.Model.BookImage;
 import com.example.backendapi.Model.PartFileModel;
+import com.example.backendapi.Model.User;
 import com.example.backendapi.ModelMapping.BookMapping;
 import com.example.backendapi.ModelMapping.BookModel;
+import com.example.backendapi.ModelMapping.ExchangeBook;
 import com.example.backendapi.ModelMapping.PagingModel;
 import com.example.backendapi.Repository.BookImageRepository;
 import com.example.backendapi.Repository.BookRepository;
@@ -94,6 +96,27 @@ public class BookService implements IBookService {
             return null;
         }
         return BookMapping.toBook(book.get());
+    }
+
+    @Override
+    public ExchangeBook exchangeBook(UUID id, String userName) {
+        //Book giver
+        Book book = bookRepository.findById(id).get();
+        User userGiverBook = book.getUser();
+        //book recipient
+        User userBookRecipient = userRepository.findByUserName(userName);
+        //
+        ExchangeBook exchangeBook = new ExchangeBook();
+        //set info book recipient
+        exchangeBook.setEmailBookRecipient(userBookRecipient.getEmail());
+        exchangeBook.setPhoneNumberBookRecipient(userBookRecipient.getPhoneNumber());
+        exchangeBook.setUserNameBookRecipient(userBookRecipient.getUsername());
+        //set info book giver
+        exchangeBook.setNameBook(book.getName());
+        exchangeBook.setEmailBookGiver(userGiverBook.getEmail());
+        exchangeBook.setUserNameBookGiver(userGiverBook.getUsername());
+
+        return exchangeBook;
     }
 
     private void addImageBook(UUID bookId, List<MultipartFile> productImage) {
