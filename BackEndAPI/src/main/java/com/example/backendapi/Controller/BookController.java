@@ -59,9 +59,8 @@ public class BookController {
         return bookService.getBookByID(id);
     }
     @PostMapping("/exchange")
-    public ExchangeBook exchange(@RequestBody UUID id, Authentication auth){
-        String userName = auth.getName();
-
-        return bookService.exchangeBook(id,userName);
+    public ExchangeBook exchange(@RequestBody UUID id){
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return bookService.exchangeBook(id, user);
     }
 }

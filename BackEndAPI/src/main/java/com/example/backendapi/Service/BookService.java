@@ -13,6 +13,7 @@ import com.example.backendapi.ModelMapping.PagingModel;
 import com.example.backendapi.Repository.BookImageRepository;
 import com.example.backendapi.Repository.BookRepository;
 import com.example.backendapi.Repository.UserRepository;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.UnsupportedEncodingException;
 import java.sql.Date;
 import java.util.List;
 import java.util.Optional;
@@ -37,6 +39,8 @@ public class BookService implements IBookService {
     private BookImageRepository bookImageRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    EmailService emailService;
     @Override
     public boolean postBook(UUID userId, BookModel bookModel) {
         Book book = new Book();
@@ -99,24 +103,31 @@ public class BookService implements IBookService {
     }
 
     @Override
-    public ExchangeBook exchangeBook(UUID id, String userName) {
+    public ExchangeBook exchangeBook(UUID id,User user ) {
         //Book giver
         Book book = bookRepository.findById(id).get();
         User userGiverBook = book.getUser();
         //book recipient
-        User userBookRecipient = userRepository.findByUserName(userName);
+        String username = user.getUsername();
         //
         ExchangeBook exchangeBook = new ExchangeBook();
         //set info book recipient
-        exchangeBook.setEmailBookRecipient(userBookRecipient.getEmail());
-        exchangeBook.setPhoneNumberBookRecipient(userBookRecipient.getPhoneNumber());
-        exchangeBook.setUserNameBookRecipient(userBookRecipient.getUsername());
+        exchangeBook.setEmailBookRecipient(user.getEmail());
+        exchangeBook.setPhoneNumberBookRecipient(user.getPhoneNumber());
+        exchangeBook.setUserNameBookRecipient(user.getUsername());
         //set info book giver
         exchangeBook.setNameBook(book.getName());
         exchangeBook.setEmailBookGiver(userGiverBook.getEmail());
         exchangeBook.setUserNameBookGiver(userGiverBook.getUsername());
+        try {
+            emailService.sendMailExchangeBook(exchangeBook);
+            return exchangeBook;
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
 
-        return exchangeBook;
     }
 
     private void addImageBook(UUID bookId, List<MultipartFile> productImage) {
